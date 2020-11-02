@@ -1,6 +1,6 @@
 <html>
 <body style="padding:100px;background-color:#fafafa;font-family: 'Segoe UI', sans-serif;">
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <style>
     #drop-region {
 	background-color: #fff;
@@ -46,6 +46,7 @@
 	</div>
 	<div id="image-preview"></div>
 </div>
+<div id='Directory'></div>
 
 <script type="text/javascript">
 var // where files are dropped + file selector is opened
@@ -95,6 +96,18 @@ function handleFiles(files) {
 	for (var i = 0, len = files.length; i < len; i++) {
 		if (validateImage(files[i]))
 			previewAnduploadImage(files[i]);
+			$.ajax({
+				url: "/get_file",
+				type: "get",
+				data: {file: files[i]},
+				success: function(response) {
+				$("#Directory").html(response.html);
+				},
+				error: function(xhr) {
+					//Do Something to handle error
+				}
+    		});
+
 	}
 }
 
@@ -139,42 +152,14 @@ function previewAnduploadImage(image) {
 	reader.onload = function(e) {
 		img.src = e.target.result;
 	}
+	
 	reader.readAsDataURL(image);
 
-	// create FormData
-	var formData = new FormData();
-	formData.append('image', image);
+	var perc = (e.loaded / e.total * 100) || 100,width = 100 - perc;
 
-	// upload the image
-	var uploadLocation = 'https://api.imgbb.com/1/upload';
-	formData.append('key', 'bb63bee9d9846c8d5b7947bcdb4b3573');
+	overlay.style.width = width;
 
-	var ajax = new XMLHttpRequest();
-	ajax.open("POST", uploadLocation, true);
-
-	ajax.onreadystatechange = function(e) {
-		if (ajax.readyState === 4) {
-			if (ajax.status === 200) {
-				// done!
-			} else {
-				// error!
-			}
-		}
-	}
-
-	ajax.upload.onprogress = function(e) {
-
-		// change progress
-		// (reduce the width of overlay)
-
-		var perc = (e.loaded / e.total * 100) || 100,
-			width = 100 - perc;
-
-		overlay.style.width = width;
-	}
-
-	ajax.send(formData);
-
+	
 }
 </script>
 
